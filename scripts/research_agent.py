@@ -31,15 +31,36 @@ def main():
 
     print(f"Researching {target_company}...")
     
+    # Read user profile
+    profile_file = "my_profile.md"
+    user_profile = ""
+    if os.path.exists(profile_file):
+        with open(profile_file, 'r', encoding='utf-8') as f:
+            user_profile = f.read()
+
+    profile_instruction = ""
+    if user_profile:
+        profile_instruction = f"""
+    また、以下は私の現在の専攻・研究内容・興味関心です。
+    【私のプロフィール】
+    {user_profile}
+    
+    この情報を元に、企業とのマッチ度合いを評価してください。
+    """
+    
     # Construct prompt
     prompt = f"""
     あなたは理系院卒向けの就職エージェントであり、プロのリサーチャーです。
     「{target_company}」について、最新のWeb情報を検索し、以下の項目について詳細なレポートを作成してください。
     レポートはそのままMarkdownファイルとして保存されるため、見出しを使った美しいMarkdown形式で出力してください。
+    {profile_instruction}
     
     【調査・出力項目】
     # {target_company} 企業研究レポート
     
+    ## 🎯 私とのマッチ度評価 (総合評価: ★1〜5)
+    (プロフィール情報に基づき、この企業の研究開発や事業内容と、私の専攻・興味との関連性を★の数で評価し、その理由や入社後に活かせる強みを簡潔に述べてください)
+
     ## 1. 企業概要
     事業内容や主要なプロダクト、企業のビジョンなど。
     
