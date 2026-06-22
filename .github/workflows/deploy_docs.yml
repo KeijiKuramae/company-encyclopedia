@@ -8,6 +8,10 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Daily Company Research"]
+    types:
+      - completed
 
 permissions:
   contents: write
