@@ -1,6 +1,9 @@
 site_name: 理系就活 企業図鑑
 theme:
   name: material
+  language: ja
+  font:
+    text: Noto Sans JP
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
