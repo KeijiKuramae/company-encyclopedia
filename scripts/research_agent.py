@@ -82,12 +82,11 @@ def main():
     必ずWeb検索を利用して、最新かつ正確な情報に基づいてレポートを作成してください。
     """
 
-    # Generate content using Gemini 3.5 Flash with Google Search Grounding
+    # Generate content using Gemini 3.5 Flash
     response = client.models.generate_content(
         model='gemini-3.5-flash',
         contents=prompt,
         config=types.GenerateContentConfig(
-            tools=[{"google_search": {}}],
             temperature=0.3
         )
     )
