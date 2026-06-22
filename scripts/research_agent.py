@@ -1,0 +1,98 @@
+import os
+import csv
+import datetime
+from google import genai
+from google.genai import types
+
+def main():
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        print("GEMINI_API_KEY is not set.")
+        return
+
+    # Initialize client
+    client = genai.Client(api_key=api_key)
+    
+    csv_file = "companies.csv"
+    companies = []
+    target_company = None
+    
+    # Read companies.csv
+    with open(csv_file, mode='r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            companies.append(row)
+            if row['Status'] == 'Pending' and not target_company:
+                target_company = row['Company Name']
+    
+    if not target_company:
+        print("No pending companies found.")
+        return
+
+    print(f"Researching {target_company}...")
+    
+    # Construct prompt
+    prompt = f"""
+    あなたは理系院卒向けの就職エージェントであり、プロのリサーチャーです。
+    「{target_company}」について、最新のWeb情報を検索し、以下の項目について詳細なレポートを作成してください。
+    レポートはそのままMarkdownファイルとして保存されるため、見出しを使った美しいMarkdown形式で出力してください。
+    
+    【調査・出力項目】
+    # {target_company} 企業研究レポート
+    
+    ## 1. 企業概要
+    事業内容や主要なプロダクト、企業のビジョンなど。
+    
+    ## 2. 理系院生向け情報 (R&D・技術力)
+    - 研究開発(R&D)の注力分野
+    - 保有しているコア技術・強み
+    - 最近の技術的なニュースや特許・論文などの動向（もしあれば）
+    
+    ## 3. 待遇・福利厚生
+    - 平均年収、初任給（特に院卒向け）
+    - 福利厚生、家賃補助などの制度
+    - ワークライフバランス、残業時間、働きやすさに関する評判
+    
+    ## 4. キャリアパス
+    - 理系出身者の主な配属先・職種
+    - 採用実績（大学院など）
+    - 入社後のキャリアイメージ、研修制度
+    
+    必ずWeb検索を利用して、最新かつ正確な情報に基づいてレポートを作成してください。
+    """
+
+    # Generate content using Gemini 2.0 Flash with Google Search Grounding
+    response = client.models.generate_content(
+        model='gemini-2.0-flash',
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            tools=[{"google_search": {}}],
+            temperature=0.3
+        )
+    )
+    
+    report_content = response.text
+    
+    # Save the markdown file
+    safe_company_name = target_company.replace(" ", "_").replace("/", "_")
+    file_name = f"{safe_company_name}.md"
+    file_path = os.path.join("docs", "companies", file_name)
+    
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(report_content)
+        
+    print(f"Saved report to {file_path}")
+    
+    # Update CSV status
+    with open(csv_file, mode='w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['Company Name', 'Status'])
+        writer.writeheader()
+        for row in companies:
+            if row['Company Name'] == target_company:
+                row['Status'] = 'Done'
+            writer.writerow(row)
+            
+    print(f"Updated {csv_file}")
+
+if __name__ == "__main__":
+    main()
