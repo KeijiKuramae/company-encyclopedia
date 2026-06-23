@@ -88,14 +88,27 @@ def main():
     必ずWeb検索を利用して、最新かつ正確な情報に基づいてレポートを作成してください。
     """
 
-    # Generate content using Gemini 3.5 Flash
-    response = client.models.generate_content(
-        model='gemini-3.5-flash',
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            temperature=0.3
-        )
-    )
+    # Generate content with fallback models
+    models_to_try = ['gemini-3.5-flash', 'gemini-3.5-flash-8b', 'gemini-2.5-flash', 'gemini-1.5-pro']
+    response = None
+    last_error = None
+    
+    for m in models_to_try:
+        try:
+            print(f"Trying model: {m}...")
+            response = client.models.generate_content(
+                model=m,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.3)
+            )
+            print(f"Successfully generated content using {m}!")
+            break
+        except Exception as e:
+            print(f"Failed with {m}: {e}")
+            last_error = e
+            
+    if not response:
+        raise Exception(f"All models failed. Last error: {last_error}")
     
     report_content = response.text
     
