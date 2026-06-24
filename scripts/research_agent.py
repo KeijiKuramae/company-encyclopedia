@@ -112,6 +112,9 @@ def main():
     
     report_content = response.text
     
+    if not report_content or not report_content.strip():
+        raise Exception("Generated report is empty! The model returned a blank response.")
+    
     # Save the markdown file
     safe_company_name = target_company.replace(" ", "_").replace("/", "_")
     file_name = f"{safe_company_name}.md"
