@@ -1,0 +1,22 @@
+name: Daily Gacha Pre-generation (Plus users)
+
+on:
+  schedule:
+    # 毎日 4:00 JST (19:00 UTC) — Plusユーザーの当日分ガチャを事前生成
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+jobs:
+  pregenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call discovery cron endpoint
+        run: |
+          # SITE_URL はデプロイ後に設定（未設定ならスキップ）
+          if [ -z "${{ secrets.SITE_URL }}" ]; then
+            echo "SITE_URL secret is not set. Skipping."
+            exit 0
+          fi
+          curl -sf -X POST "${{ secrets.SITE_URL }}/api/cron/discovery" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 300
