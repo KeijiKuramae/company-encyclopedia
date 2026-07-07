@@ -2,3 +2,5 @@ google-genai>=0.5.0
 pandas>=2.0.0
 mkdocs-material>=9.5.0
 python-dotenv>=1.0.0
+requests>=2.31.0
+tweepy>=4.14.0
